@@ -74,7 +74,7 @@ The user can control the component and widget behavior in the details panel.
 - `Target Tag`
 > The tag that marks the component that we are interested in parsing. This is case-insensitive. When this is cleared 
 > (`None`), `Target Actor` itself will be parsed. When the tag is not empty and no matching component on the target 
-> actor can be found, the failure will be reported in the `Debug Properties` section as well as on the widget during 
+> actor can be found, the failure will be reported in the `Target Properties` section as well as on the widget during 
 > runtime. When more than one component has the same tag, the first one found will be used. Tags have no effect when 
 > parsing target actors.
 
