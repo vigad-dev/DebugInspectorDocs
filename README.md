@@ -1,17 +1,19 @@
 # DebugInspector Documentation
 
-![screenshot of some features](Images/cubesruntime.png)
+![screenshot of some features](Images/thumbnail.png)
 
 DebugInspector is a plugin for Unreal Engine 5 designed to help developers inspect `UPROPERTY` values at actor locations 
-during runtime. It provides a `WidgetComponent` that will parse a tagged component on a target actor and print selected
-`UPROPERTY` values to a screen-space widget. The plugin is used from the editor and requires no C++ or Blueprint code.
+during runtime. It provides a `WidgetComponent` that will parse a tagged component or a target actor, and print selected
+`UPROPERTY` values to a screen-space widget. The plugin is used from the editor and requires no C++ or Blueprint code. 
+Simply add the component to an actor, select which UPROPERTY values to show and hit play.
 
-DebugInspector officially supports UE 5.0 - 5.7 on Windows, macOS and Linux.
+DebugInspector officially supports UE 5.4 - 5.7 on Windows and macOS. As the plugin doesn't use any recently introduced 
+or platform specific features, it's likely to work with other versions when compiled from source.
 
-### \>> [Get DebugInspector on FAB](https://www.fab.com) <<
+### \>> [Get DebugInspector on FAB](https://www.fab.com/listings/533af2e0-f9a2-4753-87cb-3934a2051dba) <<
 
 ### Bug Reports & Feedback
-To report issues or share feedback, please see FAB listing or `.uplugin` for support email address.
+To report issues or share feedback, please see `.uplugin` for support email address.
 
 ---
 
@@ -33,53 +35,75 @@ To report issues or share feedback, please see FAB listing or `.uplugin` for sup
 <a id="installation"></a>
 ## > Installation
 
-[DebugInspector is available on FAB](https://www.fab.com).
+[DebugInspector is available on FAB](https://www.fab.com/listings/533af2e0-f9a2-4753-87cb-3934a2051dba).
 
-Download the plugin for the matching engine version and place it in the top level `Plugins/` folder (create the folder
-if it does not exist). After editor restart, the plugin will be visible in the Plugins menu under the `Debug` category.
+When installed through the Epic Games Launcher, the process is automated.
 
-For C++ projects, the plugin can either use the shipped binaries or be manually built from source using existing project
-workflows. The `Plugins/DebugInspector/` folder should be automatically detected.
+For manual installs, download the plugin for the matching engine version and place it in the top level `Plugins/` folder 
+in your project (create the folder if it does not exist). After editor restart, the plugin will be visible in the Plugins
+menu under the `Debug` category. You may need to enable it and restart the editor.
+
+C++ projects can use the shipped binaries or build from source using existing project workflows. The `Plugins/DebugInspector/` 
+folder should be detected automatically.
 
 <a id="use"></a>
 ## > Using the plugin
 
-DebugInspector defines a new actor scene component class called `UDebugInspectorWidgetComponent`. This component can be 
-attached to any actor in the scene. Its placement in the actor hierarchy is only for rendering purposes and the component
-can target any component on any actor regardless of where it is placed in the scene.
+![screenshot of some features](Images/editor.png)
 
-When placed in the world, the component will parse the target component or actor and render a tree view of its `UPROPERTY` 
-variables in the details panel. Both public and private properties are parsed. The user can select properties by using 
-the checkboxes. Hovering on the property row shows the variables tooltip. All properties, including inherited ones and 
-those defined using C++ or Blueprints are visible, regardless of whether they are public, private or protected.
+DebugInspector defines a new scene component class `UDebugInspectorWidgetComponent`. This component can be 
+attached to any actor in the scene. Its placement in the component hierarchy is only for rendering purposes and any 
+component on any actor can be targeted regardless of where it is placed in the scene.
 
-In the editor, the component is displayed as a billboard icon. During runtime, a screen-space widget will be rendered at
-the location. The widget will move with its parent and output is generated on `TickComponent`.
+When placed on an actor, `UDebugInspectorWidgetComponent`  will parse the target component or actor and render a
+tree view of its `UPROPERTY` variables in the details panel. The user can select properties by using the checkboxes. 
+Hovering on the property row shows the variable tooltip. All properties marked with `UPROPERTY`, including inherited ones 
+and those defined using C++ or Blueprints are visible, regardless of whether they are public, private or protected.
 
-The user can control the component and widget behavior in the details panel.
+In the editor, the component is displayed as a billboard icon. The user can control component and widget behavior in the
+details panel. During runtime, a screen-space widget will be rendered at the component location which displays formated 
+`UPROPERTY` values on `TickComponent`.
+
+See [example section ](#examples) for a detailed walkthrough.
+
+When used from the Blueprint editor, the component can only target component classes in the same hierarchy or the owning
+actor class. All instances of the component originating from a Blueprint hierarchy must have the same target and selection.
+Instance editing of Blueprint generated components is hidden. For bespoke parsing, the component should be added to
+instances instead of the whole class. The appearance of Blueprint instances can still be edited.
+
+
+![screenshot of some features](Images/bp_editor.png)
+
+`UDebugInspectorWidgetComponent` is designed as a temporary component that is added to actors being investigated. It is 
+meant to be used from the editor. Spawning and assigning through C++ or Blueprint code is not tested and the user does 
+so at their own risk. The component should not be included in shipping builds.
 
 <a id="controls"></a>
 ## > Controls
 
 ### `Debug Target`
 
-![screenshot of some features](Images/debugtarget.png)
+This section is not available on instances of Blueprint generated components
+(created in a Blueprint and viewed in the world)
 
+![screenshot of some features](Images/debug_target.png)
 
 - `Target Actor`
 > The actor we are interested in parsing. This defaults to the component's owning actor. It can be set to any actor in
 > the scene, including actors which can be unloaded (e.g. by the world partition system). It keeps a soft pointer to the
-> actor and does not affect its lifetime.
+> actor and does not affect its lifetime. This is not available in the Blueprint editor where the component is limited
+> to its own hierarchy. Updating this will rebuild the tree view.
 
 - `Target Tag`
 > The tag that marks the component that we are interested in parsing. This is case-insensitive. When this is cleared 
-> (`None`), `Target Actor` itself will be parsed. When the tag is not empty and no matching component on the target 
-> actor can be found, the failure will be reported in the `Target Properties` section as well as on the widget during 
-> runtime. When more than one component has the same tag, the first one found will be used. Tags have no effect when 
-> parsing target actors.
+> (`None`), `Target Actor` itself will be parsed. In the Blueprint editor, the owning actor class will be parsed. When 
+> the tag is not empty and no matching component on the target actor can be found, the failure will be reported in the 
+> `Target Properties` section as well as on the widget during runtime. When more than one component has the same tag, 
+> the first one found will be used. Updating this will rebuild the tree view.
 
 - `Recursion Limit`
-> The depth to which the tree view in the details panel will parse the target component or actor.
+> The depth to which the tree view in the details panel will parse the target component or actor.  Updating this will 
+> rebuild the tree view.
 
 - `Render Recursion Limit`
 > The depth that leaf nodes will be parsed in the rendered widget during runtime.
@@ -87,14 +111,22 @@ The user can control the component and widget behavior in the details panel.
 
 ### `Target Properties`
 
-![screenshot of some features](Images/targetproperties.png)
+This section is not available on instances of Blueprint generated components
+(created in a Blueprint and viewed in the world)
 
-This section visualizes the property hierarchy of the parsed object. Selecting or clearing any node will propagate its 
-status to all descendants. Nodes are grouped by their category and displayed in the tree view as `[Category]`. The 
-categories are sorted alphabetically and properties with no category are grouped in `Uncategorized` which is placed at 
-the end. Whole categories can be toggled. Selections and expanded status of nodes is persistent across editor sessions
-but will be cleared when changing the target or recursion variables. The search function will display matching names and
-categories together with their children.
+![screenshot of some features](Images/target_properties.png)
+
+This section visualizes the property hierarchy of the parsed object. The current target is listed at the top. Selecting 
+or clearing any node will propagate its status to all descendants. Nodes are grouped by their category (displayed in the
+tree view as `[Category]`). The categories are sorted alphabetically and properties with no category are grouped in
+`Uncategorized` which is placed at the end. Whole categories can be toggled. Selections and expanded status of nodes is 
+persistent across editor sessions but will be cleared when changing the target or recursion variables. The search function
+will display matching names and categories together with their children. 
+
+In the editor, the tree view updates automatically on tick and when `Debug Target` variables are changed. In the Blueprint
+editor, the component does not tick and users must press the "Refresh" button when the actor blueprint is first loaded, 
+after components are added or removed, and after component tags are edited. There is also a "Rebuild" button that clears
+old data and regenerates the property tree.
 
 ---
 
@@ -110,10 +142,10 @@ categories together with their children.
 > Standard UE5 font controls. The widget can set a custom font or fall back to the default one.
 
 - `Min Wrap Width`
-> Limit text wrap. Text will only break on whitespace.
+> Control the length at which strings get broken up on several lines. 
 
 - `Min Width`
-> Limit the widget width to avoid flickering when data changes rapidly from frame to frame.
+> Enforce a lower limit to widget width to avoid flickering when data changes rapidly from frame to frame.
 
 - `Padding`
 > Distance between the edges of the widget and the debug text.
@@ -127,8 +159,10 @@ categories together with their children.
 ## > Formatting
 
 ### Hierarchy
-All properties are formatted as `Name: Value`. Hierarchical placement is displayed using either brackets (`[]` when 
-inside an array, `{}` when inside a struct, `()` for select struct types) or prefixing with `-` to denote the property
+
+During runtime, property values are printed on a screen-space widget using formating that shows the underlying data 
+structure. Entries are formatted as `Name: Value`. Hierarchical placement is displayed using either brackets (`[]` when 
+inside an array, `{}` when inside a struct, `()` for common struct types) or prefixing with `-` to denote the property
 depth:
 
 ```
@@ -140,7 +174,8 @@ ObjectName:
 --Property: Value // <- Property belongs to a struct inside an object
 --Property: Value
 
-VectorName: (X: Value, Y: Value, Z: Value)
+VectorName: (Value, Value, Value)
+RotatorName: (P: Value, Y: Value, R: Value)
 PropertyName: Value
 QuatName: (X: Value, Y: Value, Z: Value, W: Value)
 
@@ -158,101 +193,142 @@ Complex hierarchies with arrays of structs that hold objects etc. can produce mo
 
 <a id="limitations"></a>
 ## > Limitations
+The widget is only rendered during runtime and not in the editor. No `UPROPERTY` values are presented in the editor.
+The plugin is designed to be used from the editor and not from C++ or Blueprint code.
 
-The widget is only rendered during runtime and not in the editor. The parsed actor and component must exist in the
-editor and objects spawned during gameplay cannot be targeted. The plugin does not currently support adding the component
-to Blueprint classes (adding to BP instances is supported).
+Parsed `UPROPERTY` variables and tagged components must exist on the target object to be able to view and select them in 
+the details panel. Dynamically added components must include their own `UDebugInspectorPropertyWidget`.
 
-The plugin does not parse all UE5 data types like `TMap`, `TSet`, `TWeakObjectPtr` or `TSoftObjectPtr`. Functions and 
-delegates are also not turned into readable strings. The user can process unsupported types themselves and generate a 
-custom `UPROPERTY` string which can then be printed using the DebugInspector widget.
+The plugin does not automatically parse all UE5 data types like `TMap`, `TSet`, `TWeakObjectPtr` or `TSoftObjectPtr`. 
+Functions and delegates are not turned into readable strings. The user can process unsupported types themselves and 
+generate a custom `UPROPERTY` string which can then be printed using DebugInspector.
 
 When a `UPROPERTY` on a target is of type `AActor` or `UActorComponent`, only their readable name is printed. For more
 details on such objects, they should be direct debug targets.
+
+All instances of the component originating from a Blueprint hierarchy must have the same target and selection.
+For bespoke parsing, the component should be added to instances instead of the whole class. Actors can have any number of
+components that are either inherited or placed on the instance directly.
 
 <a id="custom"></a>
 ## > Creating custom strings
 
 DebugInspector supports a subset of UE5 data types and has internal formatting rules. However, as the plugin reports any
-selected `FString` or `FText` values, users can create their own strings and expose them as a `UPROPERTY`. This may be 
+selected `FString` values, users can create their own strings and expose them as a `UPROPERTY`. This may be 
 public, private or protected. The widget will enforce its own formatting rules based on the hierarchy so newlines inside 
 deeply nested custom strings may result in staggered output.
 
 <a id="examples"></a>
 ## > Examples
 
-We want to debug the collisions of a trigger box. We add two `UDebugInspectorWidgerComponent` instances to the actor.
+As an example use case, consider debugging player character collisions with a trigger box. We would like to have
+live data about the trigger volume. We must set the trigger to show in game as it's hidden by default and the widget
+will not be displayed if the owning actor is hidden.
 
-![screenshot of some features](Images/addcomponent.png)
+We begin by adding two `UDebugInspectorWidgerComponent` instances to the trigger actor.
 
-![screenshot of some features](Images/twocomponents.jpg)
+![screenshot of some features](Images/add_component.png)
 
-We tag the `CollisionComponent` with `DebugTarget`.
 
-![screenshot of some features](Images/exampletwo.png)
+We tag the `CollisionComponent` with `DebugTarget` (this can be any valid FName).
 
-The first component will target the `CollisionComponent` and print its collision responses to `WorldStatic`, 
-`WorldDynamic` and `Pawn`.
+![screenshot of some features](Images/tag_component.png)
 
-![screenshot of some features](Images/component1.png)
-
-The second component will have no tag and will therefore target the actor itself. On the actor Blueprint we have created 
+The first component will have no tag (set to None) and will therefore target the actor itself. On the trigger Blueprint we have created 
 two `UPROPERTY` values: a boolean `Overlap` and an actor pointer `Overlapped Actor`. On overlap begin we set the boolean 
-to true and set the pointer to the overlapped actor. On overlap end, we set the booelan to false and clear the pointer.
+to true and set the pointer to the overlapped actor. On overlap end, we set the boolean to false and clear the pointer.
 
-![screenshot of some features](Images/component2.png)
+The second component will target the tagged `CollisionComponent` and print its collision responses to `Pawn`.
+
+The search box allows for deeply nested properties to be selected easily.
+
+![screenshot of some features](Images/example_targets.png)
 
 During runtime, the component updates on tick, and we can see the debugging values printed at the specified component 
-locations.
+locations. Enums are printed as their readable string values, booleans use `true` / `false` and the OverlappedActor pointer
+is either `<null>` or displays its readable name.
 
-![screenshot of some features](Images/nooverlap.jpg)
-![screenshot of some features](Images/overlap.jpg)
+![screenshot of some features](Images/example_result.png)
+
+When debugging is done, the components can be removed.
 
 <a id="troubleshooting"></a>
 ## > Troubleshooting
 
 <details>
+<summary> "DebugInspector is incompatible" </summary>
+Plugins must list specific engine versions. As the plugin uses only core engine features, it's likely to work with future 
+versions. Delete "EngineVersion" line in .uplugin to remove the warning.
+</details>
+<details>
 <summary> "Plugin is built for a different engine version" </summary>
-Plugin binaries must match the engine version where they are being used. Either download the correct version binaries or
-build the plugin manually from source.
+Plugin binaries must match the engine version where they are being used. Download the correct version binaries or
+build the plugin manually from source. Automatic rebuilds often don't work.
 </details>
 <details>
 <summary> Compilation errors </summary>
 Please contact the support email with detailed error messages and information about your engine and platform.
 </details>
 <details>
+<summary> Crashes </summary>
+There is always a chance that live recompiles, Blueprint class edits and other accumulating errors may produce cached 
+Reflection data that is incompatible with actual memory. A restart or recompile usually solves the problem. If not, 
+please contact the support email with detailed error messages and information about your engine, platform and use case.
+</details>
+<details>
+<summary> "Error" </summary>
+Any occurrence of "Error" indicates that property descriptors, rather than the property values, are invalid. 
+This can be due to cache and memory mismatches from live recompiles and Blueprint class edits. Try rebuilding the tree, 
+readding the component, recompiling or restarting. In case of persistent errors, please contact the support email with 
+detailed information about your engine, platform and use case.
+</details>
+<details>
+<summary> Component shows in editor but no widget is rendered during runtime </summary>
+Make sure HiddenInGame boolean flag in the Appearance section is disabled. The widget will not display if its parent
+is hidden in game.
+</details>
+<details>
+<summary> Target and property selection sections not listed </summary>
+When the debug widget is placed on a Blueprint class, all instances are expected to have the same target and selected
+properties. When the Blueprint changes and is recompiled, instance data may become invalid and changes are not propagated.
+Editing generated instances has been hidden. For bespoke parsing of individual actors, place the debug widget on 
+instances in the world, not the whole class. Actors can have both types of components.
+</details>
+<details>
+<summary> Property selection gets reset to default Blueprint values </summary>
+Happens to Blueprint generated components on their construction (move, recompile, class edit). See "...sections not listed"
+above.
+</details>
+<details>
 <summary> Flickering widgets </summary>
 The widget dynamically resizes to fit its content and when this changes rapidly, it can lead to flickering. The user can
-force a minimum widget width using the Min Width property in the Appearance tab.
+force a minimum widget width using the MinWidth property in the Appearance section.
 </details>
 <details>
 <summary> Widget extends off-screen </summary>
-The plugin is meant to display limited data. Selecting all properties will generate unnecessarily long output. The user
+The plugin is designed to display limited data. Selecting all properties will generate unnecessarily long output. The user
 can reduce the set of selected properties, control the placement of the component, the alignment of the widget, the text
 wrap limit or the font size to arrive at manageable output.
 </details>
 <details>
 <summary>  "No properties selected" </summary>
-There are no properties selected in the tree view and nothing for the widget to display. When switching target actors, 
-component tags or recursion limits, the tree gets cleared and rebuilt to avoid stale data. The properties must be 
+There are no properties selected in the tree view and nothing for the widget to display. When changing target actor, 
+component tag or recursion limit, the tree gets cleared and rebuilt to avoid stale data. The properties must be 
 selected again.
 </details>
 <details>
 <summary> "No properties found" </summary>
-The plugin cannot display editor-only properties during runtime as they don't exist. The tree view may show editor-only 
-properties that get culled for runtime. Unfortunately, there isn't a robust way to detect properties inside #if WITH_EDITOR 
-blocks.
+There are selected nodes but no data. The plugin cannot display editor-only properties during runtime as they don't 
+exist. The tree view may enable selecting editor-only properties that get culled for runtime.
 </details>
 <details>
 <summary> "Unsupported type" </summary>
-The plugin does not support parsing all UE5 types like TMaps, TSets, TWeakObjectPtr or TSoftObjectPtr. The user can create
-their own debug string and expose it as a custom UPROPERTY in these cases.
+The plugin does not support parsing all UE5 types like TMap, TSet, TWeakObjectPtr or TSoftObjectPtr. The user can create
+their own debug string and expose it as a custom UPROPERTY.
 </details>
 <details>
 <summary> "null" </summary>
-Target object or struct is NULL. For example, uninitialized data or unassigned values. When the data can be shown to be
-not-null during runtime, it may be possible that the underlying parsing is breaking on a memory pointer in which case 
-please report this as a bug.
+Object or struct has a non-truthy value (e.g. uninitialized data, nullptr).
 </details>
 <details>
 <summary> "None" </summary>
@@ -260,18 +336,19 @@ The value for an empty FName
 </details>
 <details>
 <summary> "max depth" </summary>
-The parsing of this property has reached the maximum recursion limit. Displayed in the tree view after the property name. 
+Displayed in the tree view after the property name. The parsing of this property has reached the maximum recursion limit.
 The property is still selectable and will be parsed during runtime.
 </details>
 
 <a id="technical"></a>
 ## > Technical details
 
-`UDebugInspectorWidgetComponent` inherits from `UWidgetComponent` and works using UE5's reflection system. It ticks in
-the editor to find tagged components on target actors. The property tree is rebuilt when the target changes. To reduce 
-traversal time, a pruned tree containing only selected properties is created on `BeginPlay`. During runtime, the pruned
-tree is traversed each tick and leaf nodes are processed to create debug strings. Although not computationally expensive 
-debugging during development, the component should not be included shipping builds.
+`UDebugInspectorWidgetComponent` inherits from `UWidgetComponent` and works using UE5's Reflection system. The property
+tree is rebuilt when the target changes. To reduce traversal time, a pruned tree containing only selected properties is 
+created on `BeginPlay`. During runtime, the pruned tree is traversed each tick and leaf nodes are processed to create 
+debug strings. There is some overhead from tree building and traversal as well as widget rendering but the plugin should
+not introduce a noticeable cost. Although not computationally expensive for debugging during development, the component 
+should not be included in shipping builds.
 
 <a id="changelog"></a>
 ## > Changelog
