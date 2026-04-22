@@ -10,7 +10,7 @@ Simply add the component to an actor, select which UPROPERTY values to show and 
 DebugInspector officially supports UE 5.4 - 5.7 on Windows and macOS. As the plugin doesn't use any recently introduced 
 or platform specific features, it's likely to work with other versions when compiled from source.
 
-### \>> [Get DebugInspector on FAB](https://www.fab.com/listings/533af2e0-f9a2-4753-87cb-3934a2051dba) <<
+### \>> [Get DebugInspector on FAB](https://www.fab.com/listings/cac1ee55-c0fd-4552-8b20-2b407de3a227) <<
 
 ### Bug Reports & Feedback
 To report issues or share feedback, please see `.uplugin` for support email address.
@@ -35,7 +35,7 @@ To report issues or share feedback, please see `.uplugin` for support email addr
 <a id="installation"></a>
 ## > Installation
 
-[DebugInspector is available on FAB](https://www.fab.com/listings/533af2e0-f9a2-4753-87cb-3934a2051dba).
+[DebugInspector is available on FAB](https://www.fab.com/listings/cac1ee55-c0fd-4552-8b20-2b407de3a227).
 
 When installed through the Epic Games Launcher, the process is automated.
 
